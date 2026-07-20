@@ -1,11 +1,13 @@
 import { createCallerFactory, createTRPCRouter } from "@/server/trpc/trpc";
 import { systemRouter } from "@/server/trpc/routers/system";
+import { gamificationRouter } from "@/modules/gamification/router";
 
 /**
  * Root application router. Module routers are merged here as the app grows.
  */
 export const appRouter = createTRPCRouter({
   system: systemRouter,
+  gamification: gamificationRouter,
 });
 
 export type AppRouter = typeof appRouter;

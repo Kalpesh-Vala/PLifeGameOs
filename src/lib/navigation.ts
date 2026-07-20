@@ -62,7 +62,7 @@ export const navigation: NavGroup[] = [
     items: [
       item("Dashboard", "dashboard", LayoutDashboard, false),
       item("Analytics", "analytics", BarChart3),
-      item("Achievements", "achievements", Trophy),
+      item("Achievements", "achievements", Trophy, false),
       item("Leaderboard", "leaderboard", Medal),
     ],
   },
@@ -79,7 +79,7 @@ export const navigation: NavGroup[] = [
   {
     label: "Growth",
     items: [
-      item("Skill Tree", "skills", Brain),
+      item("Skill Tree", "skills", Brain, false),
       item("Interview Prep", "interview", GraduationCap),
       item("Coding Tracker", "coding", Code2),
       item("Learning", "learning", BookOpen),
