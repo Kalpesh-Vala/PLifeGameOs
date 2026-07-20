@@ -1,5 +1,6 @@
 import { MongoClient } from "mongodb";
 import { env } from "@/env";
+import { ensureSrvResolvable } from "@/server/db/dns-fallback";
 
 /**
  * Shared native MongoDB client promise for the Auth.js adapter.
@@ -12,10 +13,12 @@ declare global {
 
 export function getMongoClientPromise(): Promise<MongoClient> | null {
   if (!env.MONGODB_URI) return null;
+  const uri = env.MONGODB_URI;
 
   if (!global._mongoClientPromise) {
-    const client = new MongoClient(env.MONGODB_URI);
-    const promise = client.connect();
+    const promise = ensureSrvResolvable(uri).then(() =>
+      new MongoClient(uri).connect(),
+    );
     // Attach a handler so a failed connection (e.g. DNS/network issue) never
     // surfaces as an unhandled rejection that crashes the dev server. The
     // original promise is still returned so the Auth.js adapter can await it.

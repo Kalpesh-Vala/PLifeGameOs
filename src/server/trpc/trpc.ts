@@ -32,10 +32,10 @@ const dbMiddleware = t.middleware(async ({ next }) => {
 
 /**
  * Protected procedure: requires an authenticated user and a live DB connection.
+ * Auth is checked first so unauthenticated requests never open a DB connection.
  * Narrows `ctx.userId` to a non-null string for downstream resolvers.
  */
 export const protectedProcedure = t.procedure
-  .use(dbMiddleware)
   .use(({ ctx, next }) => {
     if (!ctx.userId || !ctx.session?.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -46,4 +46,5 @@ export const protectedProcedure = t.procedure
         session: ctx.session,
       },
     });
-  });
+  })
+  .use(dbMiddleware);

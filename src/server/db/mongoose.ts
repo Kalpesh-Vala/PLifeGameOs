@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { env } from "@/env";
+import { ensureSrvResolvable } from "@/server/db/dns-fallback";
 
 /**
  * Cached Mongoose connection.
@@ -30,10 +31,12 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
   if (cache.conn) return cache.conn;
 
   if (!cache.promise) {
-    cache.promise = mongoose.connect(env.MONGODB_URI, {
-      dbName: env.MONGODB_DB,
-      bufferCommands: false,
-    });
+    cache.promise = ensureSrvResolvable(env.MONGODB_URI).then(() =>
+      mongoose.connect(env.MONGODB_URI!, {
+        dbName: env.MONGODB_DB,
+        bufferCommands: false,
+      }),
+    );
   }
 
   try {
