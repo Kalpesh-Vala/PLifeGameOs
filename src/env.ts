@@ -14,7 +14,10 @@ const serverSchema = z.object({
     .default("development"),
 
   // Database
-  MONGODB_URI: z.string().url().optional(),
+  // Not `.url()`: the standard (non-SRV) connection string lists multiple
+  // comma-separated hosts, which is not a valid WHATWG URL. Mongoose validates
+  // the actual connection string format at connect time.
+  MONGODB_URI: z.string().min(1).optional(),
   MONGODB_DB: z.string().default("life_os"),
 
   // Auth.js

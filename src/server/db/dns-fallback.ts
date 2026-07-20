@@ -10,7 +10,12 @@ import { setServers } from "node:dns";
  */
 const PUBLIC_DNS = ["1.1.1.1", "8.8.8.8", "8.8.4.4"];
 
-let ensured = false;
+/**
+ * Shared promise so every caller (Mongoose + the Auth.js client) awaits the
+ * *same* resolution. Using a boolean flag here would let a second concurrent
+ * caller return early and connect before `setServers` had been applied.
+ */
+let ensurePromise: Promise<void> | null = null;
 
 /** Extracts the SRV query name from a `mongodb+srv://` URI, else null. */
 function srvNameFromUri(uri: string): string | null {
@@ -23,10 +28,7 @@ function srvNameFromUri(uri: string): string | null {
   return host ? `_mongodb._tcp.${host}` : null;
 }
 
-export async function ensureSrvResolvable(uri: string): Promise<void> {
-  if (ensured) return;
-  ensured = true;
-
+async function resolveOrFallback(uri: string): Promise<void> {
   const srvName = srvNameFromUri(uri);
   if (!srvName) return; // Standard (non-SRV) URIs don't need this.
 
@@ -36,11 +38,21 @@ export async function ensureSrvResolvable(uri: string): Promise<void> {
     // Default resolver can't do the SRV lookup — switch c-ares to public DNS.
     try {
       setServers(PUBLIC_DNS);
+      // Confirm the fallback resolver can actually answer the SRV query.
+      await resolveSrv(srvName);
       console.warn(
-        `[db] SRV lookup failed with the default resolver; falling back to public DNS (${PUBLIC_DNS.join(", ")}).`,
+        `[db] SRV lookup failed with the default resolver; using public DNS (${PUBLIC_DNS.join(", ")}).`,
       );
     } catch (error) {
-      console.error("[db] Could not set fallback DNS servers:", error);
+      console.error(
+        "[db] SRV lookup still failing after DNS fallback. Consider using the standard (non-SRV) connection string.",
+        error,
+      );
     }
   }
+}
+
+export function ensureSrvResolvable(uri: string): Promise<void> {
+  ensurePromise ??= resolveOrFallback(uri);
+  return ensurePromise;
 }
