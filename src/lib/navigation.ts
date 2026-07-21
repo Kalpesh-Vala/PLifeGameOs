@@ -69,8 +69,8 @@ export const navigation: NavGroup[] = [
   {
     label: "Plan",
     items: [
-      item("Tasks", "tasks", ListChecks),
-      item("Habits", "habits", Repeat),
+      item("Tasks", "tasks", ListChecks, false),
+      item("Habits", "habits", Repeat, false),
       item("Daily Quests", "quests", Swords),
       item("Goals", "goals", Target),
       item("Calendar", "calendar", CalendarDays),

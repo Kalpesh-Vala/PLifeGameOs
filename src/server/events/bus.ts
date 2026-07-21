@@ -27,6 +27,18 @@ export type DomainEventMap = {
   };
   "achievement.unlocked": { userId: string; achievementId: string };
   "user.checkedIn": { userId: string; streak: number };
+  "task.completed": {
+    userId: string;
+    taskId: string;
+    skillId?: string;
+    xp: number;
+  };
+  "habit.completed": {
+    userId: string;
+    habitId: string;
+    skillId?: string;
+    xp: number;
+  };
 };
 
 export type DomainEventName = keyof DomainEventMap;
