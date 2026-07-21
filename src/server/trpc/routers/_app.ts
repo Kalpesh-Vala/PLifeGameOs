@@ -8,6 +8,8 @@ import { bossRouter } from "@/modules/boss/router";
 import { journalRouter } from "@/modules/journal/router";
 import { moodRouter } from "@/modules/mood/router";
 import { timelineRouter } from "@/modules/timeline/router";
+import { memoryRouter } from "@/modules/memory/router";
+import { aiRouter } from "@/modules/ai/router";
 
 /**
  * Root application router. Module routers are merged here as the app grows.
@@ -22,6 +24,8 @@ export const appRouter = createTRPCRouter({
   journal: journalRouter,
   mood: moodRouter,
   timeline: timelineRouter,
+  memory: memoryRouter,
+  ai: aiRouter,
 });
 
 export type AppRouter = typeof appRouter;
