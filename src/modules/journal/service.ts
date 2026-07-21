@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/server/db/mongoose";
 import { dateKey } from "@/lib/date";
 import { awardXp } from "@/modules/gamification/service";
 import type { AwardResult } from "@/modules/gamification/types";
+import { ingestMemorySafe } from "@/modules/memory/service";
 import {
   JournalEntryModel,
   type JournalEntryDoc,
@@ -70,6 +71,17 @@ export async function createJournal(
       note: "Wrote a journal entry",
     });
   }
+
+  // Feed the entry into long-term memory (best-effort, non-blocking on failure).
+  await ingestMemorySafe(userId, {
+    content: input.title
+      ? `Journal — ${input.title}: ${input.content}`
+      : `Journal: ${input.content}`,
+    kind: "journal",
+    importance: 3,
+    source: "journal",
+    sourceId: String(entry._id),
+  });
 
   return { entry: toView(entry), award };
 }

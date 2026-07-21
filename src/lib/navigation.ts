@@ -113,8 +113,8 @@ export const navigation: NavGroup[] = [
   {
     label: "AI",
     items: [
-      item("AI Assistant", "ai", Sparkles),
-      item("AI Memory", "memory", Database),
+      item("AI Assistant", "ai", Sparkles, false),
+      item("AI Memory", "memory", Database, false),
     ],
   },
 ];
