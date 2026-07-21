@@ -5,6 +5,9 @@ import { tasksRouter } from "@/modules/tasks/router";
 import { habitsRouter } from "@/modules/habits/router";
 import { questsRouter } from "@/modules/quests/router";
 import { bossRouter } from "@/modules/boss/router";
+import { journalRouter } from "@/modules/journal/router";
+import { moodRouter } from "@/modules/mood/router";
+import { timelineRouter } from "@/modules/timeline/router";
 
 /**
  * Root application router. Module routers are merged here as the app grows.
@@ -16,6 +19,9 @@ export const appRouter = createTRPCRouter({
   habits: habitsRouter,
   quests: questsRouter,
   boss: bossRouter,
+  journal: journalRouter,
+  mood: moodRouter,
+  timeline: timelineRouter,
 });
 
 export type AppRouter = typeof appRouter;

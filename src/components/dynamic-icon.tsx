@@ -23,6 +23,12 @@ import {
   Brain,
   Sparkles,
   CheckCheck,
+  Briefcase,
+  HeartPulse,
+  Users,
+  Utensils,
+  Moon,
+  User,
   Circle,
   type LucideIcon,
 } from "lucide-react";
@@ -56,6 +62,12 @@ const ICONS: Record<string, LucideIcon> = {
   Brain,
   Sparkles,
   CheckCheck,
+  Briefcase,
+  HeartPulse,
+  Users,
+  Utensils,
+  Moon,
+  User,
 };
 
 export function DynamicIcon({
