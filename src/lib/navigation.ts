@@ -61,7 +61,7 @@ export const navigation: NavGroup[] = [
     label: "Overview",
     items: [
       item("Dashboard", "dashboard", LayoutDashboard, false),
-      item("Analytics", "analytics", BarChart3),
+      item("Analytics", "analytics", BarChart3, false),
       item("Achievements", "achievements", Trophy, false),
       item("Leaderboard", "leaderboard", Medal),
     ],
