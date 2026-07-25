@@ -9,7 +9,10 @@ export function makeQueryClient() {
     defaultOptions: {
       queries: {
         staleTime: 30 * 1000,
+        // Keep cached data for a day so it can be persisted for offline reads.
+        gcTime: 24 * 60 * 60 * 1000,
         refetchOnWindowFocus: false,
+        retry: 1,
       },
       dehydrate: {
         serializeData: superjson.serialize,

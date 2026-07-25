@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { get, set, del } from "idb-keyval";
 import { httpBatchStreamLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import superjson from "superjson";
@@ -28,8 +31,22 @@ function getBaseUrl() {
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 
+/** IndexedDB-backed persister so cached query data survives reloads (offline). */
+function makePersister() {
+  return createAsyncStoragePersister({
+    storage: {
+      getItem: (key) => get(key),
+      setItem: (key, value) => set(key, value),
+      removeItem: (key) => del(key),
+    },
+    key: "life-os-query-cache",
+    throttleTime: 1000,
+  });
+}
+
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
+  const isBrowser = typeof window !== "undefined";
 
   const [trpcClient] = useState(() =>
     trpc.createClient({
@@ -47,11 +64,26 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
     }),
   );
 
+  const [persister] = useState(() => (isBrowser ? makePersister() : null));
+
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        {props.children}
-      </QueryClientProvider>
+      {persister ? (
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{
+            persister,
+            maxAge: 24 * 60 * 60 * 1000,
+            buster: "v1",
+          }}
+        >
+          {props.children}
+        </PersistQueryClientProvider>
+      ) : (
+        <QueryClientProvider client={queryClient}>
+          {props.children}
+        </QueryClientProvider>
+      )}
     </trpc.Provider>
   );
 }
