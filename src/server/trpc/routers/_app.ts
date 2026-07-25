@@ -13,6 +13,9 @@ import { aiRouter } from "@/modules/ai/router";
 import { analyticsRouter } from "@/modules/analytics/router";
 import { fitnessRouter } from "@/modules/fitness/router";
 import { financeRouter } from "@/modules/finance/router";
+import { codingRouter } from "@/modules/coding/router";
+import { interviewRouter } from "@/modules/interview/router";
+import { projectsRouter } from "@/modules/projects/router";
 
 /**
  * Root application router. Module routers are merged here as the app grows.
@@ -32,6 +35,9 @@ export const appRouter = createTRPCRouter({
   analytics: analyticsRouter,
   fitness: fitnessRouter,
   finance: financeRouter,
+  coding: codingRouter,
+  interview: interviewRouter,
+  projects: projectsRouter,
 });
 
 export type AppRouter = typeof appRouter;
