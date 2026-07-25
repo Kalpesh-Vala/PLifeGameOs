@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { TRPCReactProvider } from "@/trpc/react";
+import { PwaProvider } from "@/components/pwa/pwa-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -19,6 +20,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <TooltipProvider delayDuration={200}>
             {children}
             <Toaster richColors position="top-right" />
+            <PwaProvider />
           </TooltipProvider>
         </TRPCReactProvider>
       </SessionProvider>
