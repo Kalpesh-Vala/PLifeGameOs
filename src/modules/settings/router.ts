@@ -15,6 +15,7 @@ export const settingsRouter = createTRPCRouter({
         displayName: z.string().max(80).nullable().optional(),
         currency: z.string().min(1).max(4).optional(),
         aiContextEnabled: z.boolean().optional(),
+        notificationsEnabled: z.boolean().optional(),
       }),
     )
     .mutation(({ ctx, input }) => updateSettings(ctx.userId, input)),

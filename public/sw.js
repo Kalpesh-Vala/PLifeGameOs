@@ -1,5 +1,5 @@
 /* Life OS service worker — pragmatic offline support. */
-const VERSION = "life-os-v1";
+const VERSION = "life-os-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const API_CACHE = `${VERSION}-api`;
@@ -93,4 +93,24 @@ self.addEventListener("fetch", (event) => {
         .catch(() => caches.match(request)),
     );
   }
+});
+
+// Focus (or open) the app when a reminder notification is clicked.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/dashboard";
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        for (const client of clients) {
+          if ("focus" in client) {
+            client.focus();
+            if ("navigate" in client) client.navigate(target);
+            return;
+          }
+        }
+        if (self.clients.openWindow) return self.clients.openWindow(target);
+      }),
+  );
 });

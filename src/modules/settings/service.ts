@@ -10,6 +10,7 @@ export async function getSettings(userId: string): Promise<SettingsView> {
     displayName: doc.displayName ?? null,
     currency: doc.currency,
     aiContextEnabled: doc.aiContextEnabled,
+    notificationsEnabled: doc.notificationsEnabled ?? true,
     onboardedAt: doc.onboardedAt ? doc.onboardedAt.toISOString() : null,
   };
 }
@@ -18,6 +19,7 @@ export type UpdateSettingsInput = {
   displayName?: string | null;
   currency?: string;
   aiContextEnabled?: boolean;
+  notificationsEnabled?: boolean;
 };
 
 export async function updateSettings(
@@ -34,6 +36,7 @@ export async function updateSettings(
     displayName: doc!.displayName ?? null,
     currency: doc!.currency,
     aiContextEnabled: doc!.aiContextEnabled,
+    notificationsEnabled: doc!.notificationsEnabled ?? true,
     onboardedAt: doc!.onboardedAt ? doc!.onboardedAt.toISOString() : null,
   };
 }
@@ -55,6 +58,7 @@ export async function completeOnboarding(
     displayName: doc!.displayName ?? null,
     currency: doc!.currency,
     aiContextEnabled: doc!.aiContextEnabled,
+    notificationsEnabled: doc!.notificationsEnabled ?? true,
     onboardedAt: doc!.onboardedAt ? doc!.onboardedAt.toISOString() : null,
   };
 }

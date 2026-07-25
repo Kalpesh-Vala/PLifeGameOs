@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { TRPCReactProvider } from "@/trpc/react";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
+import { NotificationProvider } from "@/components/notifications/notification-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -21,6 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             {children}
             <Toaster richColors position="top-right" />
             <PwaProvider />
+            <NotificationProvider />
           </TooltipProvider>
         </TRPCReactProvider>
       </SessionProvider>

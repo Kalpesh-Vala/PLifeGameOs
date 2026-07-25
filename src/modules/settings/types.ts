@@ -2,6 +2,7 @@ export type SettingsView = {
   displayName: string | null;
   currency: string;
   aiContextEnabled: boolean;
+  notificationsEnabled: boolean;
   onboardedAt: string | null;
 };
 

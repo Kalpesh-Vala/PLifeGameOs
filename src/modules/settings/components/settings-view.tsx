@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Trash2,
   ShieldAlert,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -66,6 +67,7 @@ export function SettingsView() {
       <PreferencesCard
         currency={settings.data.currency}
         aiContextEnabled={settings.data.aiContextEnabled}
+        notificationsEnabled={settings.data.notificationsEnabled}
       />
       <DataCard />
       <AccountCard />
@@ -133,9 +135,11 @@ function ProfileCard({ displayName }: { displayName: string | null }) {
 function PreferencesCard({
   currency,
   aiContextEnabled,
+  notificationsEnabled,
 }: {
   currency: string;
   aiContextEnabled: boolean;
+  notificationsEnabled: boolean;
 }) {
   const utils = trpc.useUtils();
   const update = trpc.settings.update.useMutation({
@@ -196,8 +200,99 @@ function PreferencesCard({
             onCheckedChange={(v) => update.mutate({ aiContextEnabled: v })}
           />
         </div>
+        <Separator />
+        <NotificationsSetting
+          enabled={notificationsEnabled}
+          onToggle={(v) => update.mutate({ notificationsEnabled: v })}
+        />
       </CardContent>
     </Card>
+  );
+}
+
+function NotificationsSetting({
+  enabled,
+  onToggle,
+}: {
+  enabled: boolean;
+  onToggle: (v: boolean) => void;
+}) {
+  const [permission, setPermission] =
+    React.useState<NotificationPermission | "unsupported">("default");
+
+  React.useEffect(() => {
+    // Reading a browser-only value once on mount.
+    const next =
+      typeof window === "undefined" || typeof Notification === "undefined"
+        ? "unsupported"
+        : Notification.permission;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPermission(next);
+  }, []);
+
+  const requestPermission = async () => {
+    if (typeof Notification === "undefined") return;
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+      if (result === "granted") {
+        toast.success("Notifications enabled \u{1F514}");
+        new Notification("You\u2019re all set! \u{1F389}", {
+          body: "I\u2019ll cheer you on and nudge you when habits are due.",
+          icon: "/icon.svg",
+        });
+      } else if (result === "denied") {
+        toast.error("Notifications blocked in your browser settings.");
+      }
+    } catch {
+      toast.error("Could not request notification permission.");
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="pr-4">
+          <p className="text-sm font-medium">Habit &amp; task reminders</p>
+          <p className="text-xs text-muted-foreground">
+            Get emotional, escalating nudges as scheduled habits approach their
+            deadline — heads-up, due, and a last-minute call. Works while the
+            app is open.
+          </p>
+        </div>
+        <Switch checked={enabled} onCheckedChange={onToggle} />
+      </div>
+
+      {enabled && permission !== "granted" && (
+        <div className="rounded-lg border border-dashed p-3">
+          {permission === "unsupported" ? (
+            <p className="text-xs text-muted-foreground">
+              Your browser doesn&apos;t support notifications.
+            </p>
+          ) : permission === "denied" ? (
+            <p className="text-xs text-muted-foreground">
+              Notifications are blocked. Enable them for this site in your
+              browser settings to receive reminders.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                One more step: allow browser notifications.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={requestPermission}
+              >
+                <Bell className="size-4" />
+                Enable notifications
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -9,6 +9,7 @@ const userSettingsSchema = new Schema(
     displayName: { type: String, default: null },
     currency: { type: String, default: "₹" },
     aiContextEnabled: { type: Boolean, default: true },
+    notificationsEnabled: { type: Boolean, default: true },
     onboardedAt: { type: Date, default: null },
   },
   { timestamps: true },
