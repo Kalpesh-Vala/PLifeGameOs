@@ -1,4 +1,4 @@
-import { Flame, Zap, Trophy, Coins } from "lucide-react";
+import { Flame, Zap, Trophy, Coins, Shield } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -83,6 +83,17 @@ export function StatCards({ profile }: { profile: ProfileView }) {
       tone: "legendary",
     },
     {
+      label: "Discipline",
+      value: profile.disciplineScore,
+      icon: Shield,
+      tone:
+        profile.disciplineScore >= 70
+          ? "success"
+          : profile.disciplineScore >= 40
+            ? "warning"
+            : "destructive",
+    },
+    {
       label: "Coins",
       value: profile.coins.toLocaleString(),
       icon: Coins,
@@ -91,7 +102,7 @@ export function StatCards({ profile }: { profile: ProfileView }) {
   ] as const;
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (

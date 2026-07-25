@@ -35,6 +35,7 @@ export type ProfileView = {
   coins: number;
   currentStreak: number;
   longestStreak: number;
+  disciplineScore: number;
   lastCheckIn: string | null;
   checkedInToday: boolean;
   checkInCount: number;

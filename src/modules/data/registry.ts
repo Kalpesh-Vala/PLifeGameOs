@@ -1,7 +1,7 @@
 import type { Model } from "mongoose";
 import { ProfileModel, XpEventModel } from "@/modules/gamification/models";
 import { TaskModel } from "@/modules/tasks/models";
-import { HabitModel } from "@/modules/habits/models";
+import { HabitModel, HabitLogModel } from "@/modules/habits/models";
 import { QuestBoardModel } from "@/modules/quests/models";
 import { BossBattleModel } from "@/modules/boss/models";
 import { JournalEntryModel } from "@/modules/journal/models";
@@ -33,6 +33,7 @@ export const USER_MODELS: { name: string; model: Model<any> }[] = [
   { name: "xpEvents", model: XpEventModel },
   { name: "tasks", model: TaskModel },
   { name: "habits", model: HabitModel },
+  { name: "habitLogs", model: HabitLogModel },
   { name: "questBoards", model: QuestBoardModel },
   { name: "bossBattles", model: BossBattleModel },
   { name: "journal", model: JournalEntryModel },

@@ -39,6 +39,8 @@ const profileSchema = new Schema(
     /** Last check-in date as an ISO date string (YYYY-MM-DD). */
     lastCheckIn: { type: String, default: null },
     checkInCount: { type: Number, default: 0, min: 0 },
+    /** Discipline score 0-100, reflecting on-time consistency. */
+    disciplineScore: { type: Number, default: 100, min: 0, max: 100 },
 
     skills: { type: [skillProgressSchema], default: [] },
     achievements: { type: [unlockedAchievementSchema], default: [] },
