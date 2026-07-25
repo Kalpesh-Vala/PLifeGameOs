@@ -100,9 +100,9 @@ export const navigation: NavGroup[] = [
   {
     label: "Knowledge",
     items: [
-      item("Notes", "notes", StickyNote),
-      item("Knowledge Base", "knowledge", Library),
-      item("Bookmarks", "bookmarks", Bookmark),
+      item("Notes", "notes", StickyNote, false),
+      item("Knowledge Base", "knowledge", Library, false),
+      item("Bookmarks", "bookmarks", Bookmark, false),
       item("Vision Board", "vision", Image),
     ],
   },
