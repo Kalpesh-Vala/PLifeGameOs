@@ -1,5 +1,6 @@
 import { format, startOfWeek, subWeeks } from "date-fns";
 import { connectToDatabase } from "@/server/db/mongoose";
+import { cachedForUser } from "@/server/cache";
 import { dateKey } from "@/lib/date";
 import { getProfileView } from "@/modules/gamification/service";
 import { XpEventModel } from "@/modules/gamification/models";
@@ -11,7 +12,13 @@ function weekKeyOf(date: Date): string {
   return format(date, "RRRR-'W'II");
 }
 
-export async function getLeaderboard(
+export function getLeaderboard(userId: string): Promise<LeaderboardView> {
+  return cachedForUser(userId, "leaderboard:overview", 30_000, () =>
+    computeLeaderboard(userId),
+  );
+}
+
+async function computeLeaderboard(
   userId: string,
 ): Promise<LeaderboardView> {
   await connectToDatabase();

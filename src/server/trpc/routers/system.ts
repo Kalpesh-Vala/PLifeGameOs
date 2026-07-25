@@ -1,5 +1,6 @@
 import { createTRPCRouter, publicProcedure } from "@/server/trpc/trpc";
 import { env, isDbConfigured, isAiConfigured } from "@/env";
+import { getCacheStats } from "@/server/cache";
 
 /**
  * System-level diagnostics and configuration status.
@@ -15,4 +16,7 @@ export const systemRouter = createTRPCRouter({
     database: isDbConfigured,
     ai: isAiConfigured,
   })),
+
+  /** Server cache hit/miss metrics for performance monitoring. */
+  cacheStats: publicProcedure.query(() => getCacheStats()),
 });

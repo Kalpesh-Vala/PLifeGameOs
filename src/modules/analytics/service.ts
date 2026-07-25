@@ -1,5 +1,6 @@
 import { subDays, differenceInCalendarDays } from "date-fns";
 import { connectToDatabase } from "@/server/db/mongoose";
+import { cachedForUser } from "@/server/cache";
 import { dateKey } from "@/lib/date";
 import { getProfileView } from "@/modules/gamification/service";
 import { XpEventModel } from "@/modules/gamification/models";
@@ -32,7 +33,15 @@ function clamp(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, n));
 }
 
-export async function getAnalyticsOverview(
+export function getAnalyticsOverview(
+  userId: string,
+): Promise<AnalyticsOverview> {
+  return cachedForUser(userId, "analytics:overview", 20_000, () =>
+    computeAnalyticsOverview(userId),
+  );
+}
+
+async function computeAnalyticsOverview(
   userId: string,
 ): Promise<AnalyticsOverview> {
   await connectToDatabase();

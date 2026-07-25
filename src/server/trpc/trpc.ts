@@ -3,6 +3,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import type { TRPCContext } from "@/server/trpc/context";
 import { connectToDatabase } from "@/server/db/mongoose";
+import { bumpUserGeneration } from "@/server/cache";
 
 const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
@@ -33,6 +34,8 @@ const dbMiddleware = t.middleware(async ({ next }) => {
 /**
  * Protected procedure: requires an authenticated user and a live DB connection.
  * Auth is checked first so unauthenticated requests never open a DB connection.
+ * After any successful mutation, the user's server cache is invalidated so
+ * subsequent reads recompute fresh data.
  * Narrows `ctx.userId` to a non-null string for downstream resolvers.
  */
 export const protectedProcedure = t.procedure
@@ -46,5 +49,12 @@ export const protectedProcedure = t.procedure
         session: ctx.session,
       },
     });
+  })
+  .use(async ({ ctx, type, next }) => {
+    const result = await next();
+    if (type === "mutation" && result.ok) {
+      bumpUserGeneration(ctx.userId);
+    }
+    return result;
   })
   .use(dbMiddleware);

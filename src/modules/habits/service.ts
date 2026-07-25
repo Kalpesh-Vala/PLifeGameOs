@@ -2,6 +2,7 @@ import { subDays } from "date-fns";
 import type { HydratedDocument } from "mongoose";
 import { connectToDatabase } from "@/server/db/mongoose";
 import { dispatch } from "@/server/events/bus";
+import { cachedForUser } from "@/server/cache";
 import { dateKey, yesterdayKey } from "@/lib/date";
 import { getSkill } from "@/modules/gamification/lib/skills";
 import {
@@ -442,7 +443,15 @@ export async function settleHabits(userId: string): Promise<SettleResult> {
   return { missed, penaltyXp, penaltyCoins };
 }
 
-export async function getHabitStats(userId: string): Promise<HabitStatsView> {
+export function getHabitStats(userId: string): Promise<HabitStatsView> {
+  return cachedForUser(userId, "habits:stats", 8_000, () =>
+    computeHabitStats(userId),
+  );
+}
+
+async function computeHabitStats(
+  userId: string,
+): Promise<HabitStatsView> {
   await connectToDatabase();
   const now = new Date();
   const today = dateKey(now);

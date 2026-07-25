@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/server/db/mongoose";
 import { dispatch } from "@/server/events/bus";
+import { cachedForUser } from "@/server/cache";
 import { dateKey, yesterdayKey } from "@/lib/date";
 import {
   getLevelProgress,
@@ -362,8 +363,14 @@ function toSkillView(skillId: string, xp: number): SkillView {
   };
 }
 
-/** Client-facing profile snapshot. */
-export async function getProfileView(userId: string): Promise<ProfileView> {
+/** Client-facing profile snapshot (cached per user). */
+export function getProfileView(userId: string): Promise<ProfileView> {
+  return cachedForUser(userId, "gami:profile", 10_000, () =>
+    computeProfileView(userId),
+  );
+}
+
+async function computeProfileView(userId: string): Promise<ProfileView> {
   const profile = await getOrCreateProfile(userId);
   const progress = getLevelProgress(profile.totalXp);
 
@@ -393,8 +400,16 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
   };
 }
 
-/** All achievements with unlock state for the current user. */
-export async function getAchievementsView(
+/** All achievements with unlock state for the current user (cached). */
+export function getAchievementsView(
+  userId: string,
+): Promise<AchievementView[]> {
+  return cachedForUser(userId, "gami:achievements", 30_000, () =>
+    computeAchievementsView(userId),
+  );
+}
+
+async function computeAchievementsView(
   userId: string,
 ): Promise<AchievementView[]> {
   const profile = await getOrCreateProfile(userId);
