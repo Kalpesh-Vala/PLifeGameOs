@@ -5,6 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import {
   Loader2,
   Download,
+  Upload,
   LogOut,
   RotateCcw,
   Trash2,
@@ -203,9 +204,15 @@ function PreferencesCard({
 function DataCard() {
   const utils = trpc.useUtils();
   const [exporting, setExporting] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [pendingBundle, setPendingBundle] = React.useState<{
+    collections: Record<string, unknown[]>;
+  } | null>(null);
+  const [importOpen, setImportOpen] = React.useState(false);
 
   const resetProgress = trpc.data.resetProgress.useMutation();
   const deleteAll = trpc.data.deleteAll.useMutation();
+  const importData = trpc.data.import.useMutation();
 
   const onExport = async () => {
     setExporting(true);
@@ -228,6 +235,29 @@ function DataCard() {
     }
   };
 
+  const onFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as unknown;
+      if (
+        !parsed ||
+        typeof parsed !== "object" ||
+        !("collections" in parsed) ||
+        typeof (parsed as { collections: unknown }).collections !== "object"
+      ) {
+        toast.error("That doesn't look like a Life OS backup file.");
+        return;
+      }
+      setPendingBundle(parsed as { collections: Record<string, unknown[]> });
+      setImportOpen(true);
+    } catch {
+      toast.error("Could not read that file.");
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -245,6 +275,68 @@ function DataCard() {
           )}
           Export all data (JSON)
         </Button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={onFilePicked}
+        />
+        <Button
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={importData.isPending}
+        >
+          {importData.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Upload className="size-4" />
+          )}
+          Restore from backup (JSON)
+        </Button>
+
+        <Dialog open={importOpen} onOpenChange={setImportOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Restore from backup?</DialogTitle>
+              <DialogDescription>
+                This replaces your current data with the contents of the backup
+                file for every module it contains. Anything not in the backup
+                stays as-is. Consider exporting a fresh backup first. This
+                cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setImportOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!pendingBundle) return;
+                  try {
+                    const res = await importData.mutateAsync({
+                      confirm: "IMPORT",
+                      bundle: pendingBundle,
+                    });
+                    await utils.invalidate();
+                    setImportOpen(false);
+                    setPendingBundle(null);
+                    toast.success(`Restored ${res.total} records.`);
+                  } catch {
+                    toast.error("Could not restore that backup.");
+                  }
+                }}
+                disabled={importData.isPending}
+              >
+                {importData.isPending && (
+                  <Loader2 className="size-4 animate-spin" />
+                )}
+                Restore
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Separator />
 

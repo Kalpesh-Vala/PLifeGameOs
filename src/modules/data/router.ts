@@ -5,6 +5,7 @@ import { enforceRateLimit } from "@/server/rate-limit";
 import {
   deleteAllUserData,
   exportUserData,
+  importUserData,
   resetProgress,
 } from "@/modules/data/service";
 
@@ -13,6 +14,23 @@ export const dataRouter = createTRPCRouter({
     enforceRateLimit(ctx.userId, "data:export", 5, 60_000);
     return exportUserData(ctx.userId);
   }),
+
+  import: protectedProcedure
+    .input(
+      z.object({
+        confirm: z.literal("IMPORT"),
+        bundle: z.object({
+          version: z.number().optional(),
+          exportedAt: z.string().optional(),
+          userId: z.string().optional(),
+          collections: z.record(z.string(), z.array(z.unknown())),
+        }),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      enforceRateLimit(ctx.userId, "data:import", 3, 60_000);
+      return importUserData(ctx.userId, input.bundle);
+    }),
 
   resetProgress: protectedProcedure
     .input(z.object({ confirm: z.literal("RESET") }))
