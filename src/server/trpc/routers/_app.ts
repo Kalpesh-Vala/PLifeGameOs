@@ -19,6 +19,9 @@ import { projectsRouter } from "@/modules/projects/router";
 import { notesRouter } from "@/modules/notes/router";
 import { knowledgeRouter } from "@/modules/knowledge/router";
 import { bookmarksRouter } from "@/modules/bookmarks/router";
+import { learningRouter } from "@/modules/learning/router";
+import { readingRouter } from "@/modules/reading/router";
+import { roadmapsRouter } from "@/modules/roadmaps/router";
 
 /**
  * Root application router. Module routers are merged here as the app grows.
@@ -44,6 +47,9 @@ export const appRouter = createTRPCRouter({
   notes: notesRouter,
   knowledge: knowledgeRouter,
   bookmarks: bookmarksRouter,
+  learning: learningRouter,
+  reading: readingRouter,
+  roadmaps: roadmapsRouter,
 });
 
 export type AppRouter = typeof appRouter;
