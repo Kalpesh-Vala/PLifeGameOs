@@ -22,6 +22,9 @@ import { bookmarksRouter } from "@/modules/bookmarks/router";
 import { learningRouter } from "@/modules/learning/router";
 import { readingRouter } from "@/modules/reading/router";
 import { roadmapsRouter } from "@/modules/roadmaps/router";
+import { leaderboardRouter } from "@/modules/leaderboard/router";
+import { visionRouter } from "@/modules/vision/router";
+import { calendarRouter } from "@/modules/calendar/router";
 
 /**
  * Root application router. Module routers are merged here as the app grows.
@@ -50,6 +53,9 @@ export const appRouter = createTRPCRouter({
   learning: learningRouter,
   reading: readingRouter,
   roadmaps: roadmapsRouter,
+  leaderboard: leaderboardRouter,
+  vision: visionRouter,
+  calendar: calendarRouter,
 });
 
 export type AppRouter = typeof appRouter;
