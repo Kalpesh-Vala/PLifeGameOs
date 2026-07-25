@@ -10,6 +10,7 @@ export async function getSettings(userId: string): Promise<SettingsView> {
     displayName: doc.displayName ?? null,
     currency: doc.currency,
     aiContextEnabled: doc.aiContextEnabled,
+    onboardedAt: doc.onboardedAt ? doc.onboardedAt.toISOString() : null,
   };
 }
 
@@ -33,6 +34,28 @@ export async function updateSettings(
     displayName: doc!.displayName ?? null,
     currency: doc!.currency,
     aiContextEnabled: doc!.aiContextEnabled,
+    onboardedAt: doc!.onboardedAt ? doc!.onboardedAt.toISOString() : null,
+  };
+}
+
+/** Marks onboarding as complete (and optionally sets a display name). */
+export async function completeOnboarding(
+  userId: string,
+  displayName?: string | null,
+): Promise<SettingsView> {
+  await connectToDatabase();
+  const set: Record<string, unknown> = { onboardedAt: new Date() };
+  if (displayName !== undefined) set.displayName = displayName;
+  const doc = await UserSettingsModel.findOneAndUpdate(
+    { userId },
+    { $set: set, $setOnInsert: { userId } },
+    { upsert: true, new: true },
+  );
+  return {
+    displayName: doc!.displayName ?? null,
+    currency: doc!.currency,
+    aiContextEnabled: doc!.aiContextEnabled,
+    onboardedAt: doc!.onboardedAt ? doc!.onboardedAt.toISOString() : null,
   };
 }
 

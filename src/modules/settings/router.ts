@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/trpc/trpc";
-import { getSettings, updateSettings } from "@/modules/settings/service";
+import {
+  getSettings,
+  updateSettings,
+  completeOnboarding,
+} from "@/modules/settings/service";
 
 export const settingsRouter = createTRPCRouter({
   get: protectedProcedure.query(({ ctx }) => getSettings(ctx.userId)),
@@ -14,4 +18,14 @@ export const settingsRouter = createTRPCRouter({
       }),
     )
     .mutation(({ ctx, input }) => updateSettings(ctx.userId, input)),
+
+  completeOnboarding: protectedProcedure
+    .input(
+      z
+        .object({ displayName: z.string().max(80).nullable().optional() })
+        .optional(),
+    )
+    .mutation(({ ctx, input }) =>
+      completeOnboarding(ctx.userId, input?.displayName),
+    ),
 });
