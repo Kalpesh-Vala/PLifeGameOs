@@ -63,7 +63,7 @@ export const navigation: NavGroup[] = [
       item("Dashboard", "dashboard", LayoutDashboard, false),
       item("Analytics", "analytics", BarChart3, false),
       item("Achievements", "achievements", Trophy, false),
-      item("Leaderboard", "leaderboard", Medal),
+      item("Leaderboard", "leaderboard", Medal, false),
     ],
   },
   {
@@ -73,7 +73,7 @@ export const navigation: NavGroup[] = [
       item("Habits", "habits", Repeat, false),
       item("Daily Quests", "quests", Swords, false),
       item("Goals", "goals", Target, false),
-      item("Calendar", "calendar", CalendarDays),
+      item("Calendar", "calendar", CalendarDays, false),
     ],
   },
   {
@@ -103,7 +103,7 @@ export const navigation: NavGroup[] = [
       item("Notes", "notes", StickyNote, false),
       item("Knowledge Base", "knowledge", Library, false),
       item("Bookmarks", "bookmarks", Bookmark, false),
-      item("Vision Board", "vision", Image),
+      item("Vision Board", "vision", Image, false),
     ],
   },
   {
