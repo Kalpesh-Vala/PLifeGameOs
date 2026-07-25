@@ -7,6 +7,7 @@ import {
   levelFromXp,
 } from "@/modules/gamification/lib/leveling";
 import { SKILLS, getSkill } from "@/modules/gamification/lib/skills";
+import { HabitLogModel } from "@/modules/habits/models";
 import {
   ACHIEVEMENTS,
   evaluateAchievements,
@@ -379,6 +380,9 @@ async function computeProfileView(userId: string): Promise<ProfileView> {
     return toSkillView(def.id, entry?.xp ?? 0);
   });
 
+  // Discipline is only meaningful once habits have actually been evaluated.
+  const disciplineTracked = !!(await HabitLogModel.exists({ userId }));
+
   return {
     level: progress.level,
     title: progress.title,
@@ -391,6 +395,7 @@ async function computeProfileView(userId: string): Promise<ProfileView> {
     currentStreak: profile.currentStreak,
     longestStreak: profile.longestStreak,
     disciplineScore: profile.disciplineScore,
+    disciplineTracked,
     lastCheckIn: profile.lastCheckIn ?? null,
     checkedInToday: profile.lastCheckIn === dateKey(),
     checkInCount: profile.checkInCount,

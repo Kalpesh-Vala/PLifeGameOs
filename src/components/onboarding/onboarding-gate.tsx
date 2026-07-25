@@ -81,8 +81,8 @@ export function OnboardingGate() {
         if (!o) finish();
       }}
     >
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-h-[90dvh] gap-4 overflow-x-hidden overflow-y-auto sm:max-w-lg">
+        <DialogHeader className="min-w-0">
           <div className="mb-1 flex size-11 items-center justify-center rounded-full bg-primary/10">
             <Sparkles className="size-5 text-primary" />
           </div>
@@ -93,7 +93,7 @@ export function OnboardingGate() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-1">
+        <div className="min-w-0 space-y-4 py-1">
           <div className="space-y-1.5">
             <Label htmlFor="onboarding-name">What should we call you?</Label>
             <Input
@@ -117,18 +117,18 @@ export function OnboardingGate() {
                     key={q.href}
                     type="button"
                     onClick={() => finish(q.href)}
-                    className="group flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
+                    className="group flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
                   >
                     <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
                       <Icon className="size-4 text-muted-foreground" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium">{q.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {q.desc}
                       </p>
                     </div>
-                    <ArrowRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                    <ArrowRight className="hidden size-4 shrink-0 text-muted-foreground transition-opacity group-hover:opacity-100 sm:block sm:opacity-0" />
                   </button>
                 );
               })}
@@ -136,11 +136,17 @@ export function OnboardingGate() {
           </div>
         </div>
 
-        <DialogFooter className="sm:justify-between">
-          <Button variant="ghost" onClick={() => finish()}>
+        <DialogFooter className="gap-2 sm:justify-between">
+          <Button
+            variant="ghost"
+            className="w-full sm:w-auto"
+            onClick={() => finish()}
+          >
             Skip for now
           </Button>
-          <Button onClick={() => finish()}>Start exploring</Button>
+          <Button className="w-full sm:w-auto" onClick={() => finish()}>
+            Start exploring
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

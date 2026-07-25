@@ -100,6 +100,7 @@ function StatsHeader({
 }: {
   stats: {
     disciplineScore: number;
+    disciplineTracked: boolean;
     dailyScore: number;
     weeklyScore: number;
     onTime: number;
@@ -110,8 +111,14 @@ function StatsHeader({
   };
 }) {
   const disc = stats.disciplineScore;
-  const discColor =
-    disc >= 70 ? "text-success" : disc >= 40 ? "text-warning" : "text-destructive";
+  const tracked = stats.disciplineTracked;
+  const discColor = !tracked
+    ? "text-muted-foreground"
+    : disc >= 70
+      ? "text-success"
+      : disc >= 40
+        ? "text-warning"
+        : "text-destructive";
 
   return (
     <Card>
@@ -124,8 +131,16 @@ function StatsHeader({
                 Discipline score
               </span>
             </div>
-            <p className={cn("mt-1 text-3xl font-bold", discColor)}>{disc}</p>
-            <Progress value={disc} className="mt-2 h-1.5" />
+            <p className={cn("mt-1 text-3xl font-bold", discColor)}>
+              {tracked ? disc : "—"}
+            </p>
+            {tracked ? (
+              <Progress value={disc} className="mt-2 h-1.5" />
+            ) : (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Check in on a scheduled habit to start tracking.
+              </p>
+            )}
           </div>
           <ScorePill
             icon={<Zap className="size-4 text-xp" />}

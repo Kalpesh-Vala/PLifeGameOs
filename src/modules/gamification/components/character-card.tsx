@@ -84,10 +84,11 @@ export function StatCards({ profile }: { profile: ProfileView }) {
     },
     {
       label: "Discipline",
-      value: profile.disciplineScore,
+      value: profile.disciplineTracked ? profile.disciplineScore : "—",
       icon: Shield,
-      tone:
-        profile.disciplineScore >= 70
+      tone: !profile.disciplineTracked
+        ? "muted-foreground"
+        : profile.disciplineScore >= 70
           ? "success"
           : profile.disciplineScore >= 40
             ? "warning"

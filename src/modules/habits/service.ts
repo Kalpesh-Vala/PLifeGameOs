@@ -457,11 +457,12 @@ async function computeHabitStats(
   const today = dateKey(now);
   const weekStart = dateKey(subDays(now, 6));
 
-  const [profile, habits, todayLogs, weekLogs] = await Promise.all([
+  const [profile, habits, todayLogs, weekLogs, anyLog] = await Promise.all([
     getProfileView(userId),
     HabitModel.find({ userId }),
     HabitLogModel.find({ userId, date: today }).lean(),
     HabitLogModel.find({ userId, date: { $gte: weekStart } }).lean(),
+    HabitLogModel.exists({ userId }),
   ]);
 
   const logByHabit = new Map(todayLogs.map((l) => [l.habitId, l]));
@@ -490,6 +491,7 @@ async function computeHabitStats(
 
   return {
     disciplineScore: profile.disciplineScore,
+    disciplineTracked: !!anyLog,
     dailyScore,
     weeklyScore,
     onTime,

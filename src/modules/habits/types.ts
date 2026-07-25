@@ -57,6 +57,7 @@ export type SettleResult = {
 
 export type HabitStatsView = {
   disciplineScore: number;
+  disciplineTracked: boolean;
   dailyScore: number;
   weeklyScore: number;
   onTime: number;
