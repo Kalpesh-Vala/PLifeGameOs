@@ -82,10 +82,10 @@ export const navigation: NavGroup[] = [
       item("Skill Tree", "skills", Brain, false),
       item("Interview Prep", "interview", GraduationCap, false),
       item("Coding Tracker", "coding", Code2, false),
-      item("Learning", "learning", BookOpen),
-      item("Roadmaps", "roadmaps", Map),
+      item("Learning", "learning", BookOpen, false),
+      item("Roadmaps", "roadmaps", Map, false),
       item("Projects", "projects", FolderKanban, false),
-      item("Reading", "reading", Library),
+      item("Reading", "reading", Library, false),
     ],
   },
   {
