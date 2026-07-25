@@ -41,6 +41,8 @@ import type { TransactionType, TransactionView } from "@/modules/finance/types";
 export function FinanceView() {
   const summary = trpc.finance.summary.useQuery();
   const list = trpc.finance.list.useQuery();
+  const settings = trpc.settings.get.useQuery();
+  const currency = settings.data?.currency ?? "₹";
 
   return (
     <div className="space-y-4">
@@ -55,18 +57,21 @@ export function FinanceView() {
           <SummaryCard
             label="Income"
             value={summary.data.income}
+            currency={currency}
             icon={<TrendingUp className="size-4" />}
             tone="success"
           />
           <SummaryCard
             label="Expenses"
             value={summary.data.expense}
+            currency={currency}
             icon={<TrendingDown className="size-4" />}
             tone="destructive"
           />
           <SummaryCard
             label="Net"
             value={summary.data.net}
+            currency={currency}
             icon={<Wallet className="size-4" />}
             tone={summary.data.net >= 0 ? "success" : "destructive"}
           />
@@ -76,12 +81,16 @@ export function FinanceView() {
       <TransactionForm />
 
       {summary.data && summary.data.expenseByCategory.length > 0 && (
-        <CategoryBreakdown items={summary.data.expenseByCategory} />
+        <CategoryBreakdown
+          items={summary.data.expenseByCategory}
+          currency={currency}
+        />
       )}
 
       <TransactionList
         transactions={list.data ?? []}
         loading={list.isLoading}
+        currency={currency}
       />
     </div>
   );
@@ -90,11 +99,13 @@ export function FinanceView() {
 function SummaryCard({
   label,
   value,
+  currency,
   icon,
   tone,
 }: {
   label: string;
   value: number;
+  currency: string;
   icon: React.ReactNode;
   tone: "success" | "destructive";
 }) {
@@ -112,7 +123,7 @@ function SummaryCard({
         </div>
         <div>
           <p className="text-xl font-semibold leading-none">
-            {formatMoney(value)}
+            {formatMoney(value, currency)}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">{label} this month</p>
         </div>
@@ -236,8 +247,10 @@ function TransactionForm() {
 
 function CategoryBreakdown({
   items,
+  currency,
 }: {
   items: { category: string; amount: number }[];
+  currency: string;
 }) {
   const max = Math.max(1, ...items.map((i) => i.amount));
   return (
@@ -251,7 +264,7 @@ function CategoryBreakdown({
             <div className="flex items-center justify-between text-xs">
               <span>{item.category}</span>
               <span className="text-muted-foreground">
-                {formatMoney(item.amount)}
+                {formatMoney(item.amount, currency)}
               </span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -270,9 +283,11 @@ function CategoryBreakdown({
 function TransactionList({
   transactions,
   loading,
+  currency,
 }: {
   transactions: TransactionView[];
   loading: boolean;
+  currency: string;
 }) {
   const utils = trpc.useUtils();
   const remove = trpc.finance.delete.useMutation({
@@ -327,7 +342,7 @@ function TransactionList({
                 )}
               >
                 {t.type === "income" ? "+" : "−"}
-                {formatMoney(t.amount)}
+                {formatMoney(t.amount, currency)}
               </span>
               <Button
                 variant="ghost"

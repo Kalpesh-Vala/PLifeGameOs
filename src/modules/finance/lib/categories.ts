@@ -22,11 +22,11 @@ export const ALL_CATEGORIES = [
   ...new Set([...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES]),
 ] as string[];
 
-/** Display currency symbol. Change this to match your locale (e.g. "$", "€"). */
+/** Default display currency symbol; overridable per user in Settings. */
 export const CURRENCY = "₹";
 
-export function formatMoney(amount: number): string {
-  return `${CURRENCY}${amount.toLocaleString(undefined, {
+export function formatMoney(amount: number, currency: string = CURRENCY): string {
+  return `${currency}${amount.toLocaleString(undefined, {
     maximumFractionDigits: 2,
   })}`;
 }

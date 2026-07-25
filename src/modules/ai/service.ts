@@ -5,6 +5,7 @@ import { isAiConfigured } from "@/env";
 import { complete } from "@/server/ai/complete";
 import { AiNotConfiguredError } from "@/server/ai/client";
 import { buildUserContext } from "@/server/ai/context";
+import { isAiContextEnabled } from "@/modules/settings/service";
 import { ChatMessageModel, type ChatMessageDoc } from "@/modules/ai/models";
 import type { ChatMessageView, SendMessageResult } from "@/modules/ai/types";
 
@@ -29,6 +30,18 @@ function toView(doc: HydratedDocument<ChatMessageDoc>): ChatMessageView {
     content: doc.content,
     createdAt: new Date(doc.createdAt as Date).toISOString(),
   };
+}
+
+const CONTEXT_DISABLED_NOTE =
+  "(The user has turned off data access for the AI. Do not reference their personal Life OS data; answer generally and, if needed, suggest they enable data access in Settings.)";
+
+/** Builds user context only if the user has granted AI data access. */
+async function buildContextIfAllowed(
+  userId: string,
+  query: string,
+): Promise<string> {
+  const allowed = await isAiContextEnabled(userId);
+  return allowed ? buildUserContext(userId, query) : CONTEXT_DISABLED_NOTE;
 }
 
 export async function getChatHistory(
@@ -57,7 +70,7 @@ export async function sendMessage(
   await ChatMessageModel.create({ userId, role: "user", content: text });
 
   const [context, recent] = await Promise.all([
-    buildUserContext(userId, text),
+    buildContextIfAllowed(userId, text),
     ChatMessageModel.find({ userId })
       .sort({ createdAt: -1 })
       .limit(HISTORY_WINDOW),
@@ -98,7 +111,10 @@ export async function sendMessage(
 export async function generateNudge(userId: string): Promise<string> {
   if (!isAiConfigured) throw new AiNotConfiguredError();
 
-  const context = await buildUserContext(userId, "daily accountability nudge");
+  const context = await buildContextIfAllowed(
+    userId,
+    "daily accountability nudge",
+  );
 
   const result = await complete({
     capability: "fast",

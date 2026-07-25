@@ -25,6 +25,8 @@ import { roadmapsRouter } from "@/modules/roadmaps/router";
 import { leaderboardRouter } from "@/modules/leaderboard/router";
 import { visionRouter } from "@/modules/vision/router";
 import { calendarRouter } from "@/modules/calendar/router";
+import { settingsRouter } from "@/modules/settings/router";
+import { dataRouter } from "@/modules/data/router";
 
 /**
  * Root application router. Module routers are merged here as the app grows.
@@ -56,6 +58,8 @@ export const appRouter = createTRPCRouter({
   leaderboard: leaderboardRouter,
   vision: visionRouter,
   calendar: calendarRouter,
+  settings: settingsRouter,
+  data: dataRouter,
 });
 
 export type AppRouter = typeof appRouter;
