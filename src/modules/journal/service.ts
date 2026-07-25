@@ -1,6 +1,12 @@
 import type { HydratedDocument } from "mongoose";
 import { connectToDatabase } from "@/server/db/mongoose";
 import { dateKey } from "@/lib/date";
+import {
+  encryptField,
+  encryptNullable,
+  decryptField,
+  decryptNullable,
+} from "@/server/security/crypto";
 import { awardXp } from "@/modules/gamification/service";
 import type { AwardResult } from "@/modules/gamification/types";
 import { ingestMemorySafe } from "@/modules/memory/service";
@@ -14,8 +20,8 @@ function toView(entry: HydratedDocument<JournalEntryDoc>): JournalEntryView {
   return {
     id: String(entry._id),
     date: entry.date,
-    title: entry.title ?? null,
-    content: entry.content,
+    title: decryptNullable(entry.title ?? null),
+    content: decryptField(entry.content),
     mood: entry.mood ?? null,
     tags: entry.tags ?? [],
     createdAt: new Date(entry.createdAt as Date).toISOString(),
@@ -57,8 +63,8 @@ export async function createJournal(
   const entry = await JournalEntryModel.create({
     userId,
     date,
-    title: input.title ?? null,
-    content: input.content,
+    title: encryptNullable(input.title ?? null),
+    content: encryptField(input.content),
     mood: input.mood ?? null,
     tags: input.tags ?? [],
   });
@@ -94,8 +100,8 @@ export async function updateJournal(
   await connectToDatabase();
   const entry = await JournalEntryModel.findOne({ _id: id, userId });
   if (!entry) return null;
-  if (input.title !== undefined) entry.title = input.title;
-  if (input.content !== undefined) entry.content = input.content;
+  if (input.title !== undefined) entry.title = encryptNullable(input.title);
+  if (input.content !== undefined) entry.content = encryptField(input.content);
   if (input.mood !== undefined) entry.mood = input.mood;
   if (input.tags !== undefined) entry.tags = input.tags;
   await entry.save();

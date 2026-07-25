@@ -38,6 +38,11 @@ const serverSchema = z.object({
     .string()
     .url()
     .default("https://models.github.ai/inference"),
+
+  // Field encryption for sensitive content (journal, notes). Any non-empty
+  // secret enables at-rest AES-256-GCM encryption. Keep it stable: rotating
+  // this value makes previously-encrypted data unreadable.
+  ENCRYPTION_KEY: z.string().min(1).optional(),
 });
 
 /**
@@ -88,3 +93,4 @@ export const isGitHubConfigured = Boolean(
 );
 export const isEmailConfigured = Boolean(env.EMAIL_SERVER && env.EMAIL_FROM);
 export const isAiConfigured = Boolean(env.GITHUB_MODELS_TOKEN);
+export const isEncryptionConfigured = Boolean(env.ENCRYPTION_KEY);

@@ -1,6 +1,12 @@
 import type { HydratedDocument } from "mongoose";
 import { connectToDatabase } from "@/server/db/mongoose";
 import { dateKey } from "@/lib/date";
+import {
+  encryptField,
+  encryptNullable,
+  decryptField,
+  decryptNullable,
+} from "@/server/security/crypto";
 import { awardXp } from "@/modules/gamification/service";
 import type { AwardResult } from "@/modules/gamification/types";
 import { ingestMemorySafe } from "@/modules/memory/service";
@@ -10,8 +16,8 @@ import { NOTE_XP, type NoteView } from "@/modules/notes/types";
 function toView(doc: HydratedDocument<NoteDoc>): NoteView {
   return {
     id: String(doc._id),
-    title: doc.title ?? null,
-    content: doc.content,
+    title: decryptNullable(doc.title ?? null),
+    content: decryptField(doc.content),
     tags: doc.tags ?? [],
     pinned: doc.pinned,
     createdAt: new Date(doc.createdAt as Date).toISOString(),
@@ -49,8 +55,8 @@ export async function createNote(
 
   const doc = await NoteModel.create({
     userId,
-    title: input.title ?? null,
-    content: input.content,
+    title: encryptNullable(input.title ?? null),
+    content: encryptField(input.content),
     tags: input.tags ?? [],
   });
 
@@ -85,8 +91,8 @@ export async function updateNote(
   await connectToDatabase();
   const doc = await NoteModel.findOne({ _id: id, userId });
   if (!doc) return null;
-  if (input.title !== undefined) doc.title = input.title;
-  if (input.content !== undefined) doc.content = input.content;
+  if (input.title !== undefined) doc.title = encryptNullable(input.title);
+  if (input.content !== undefined) doc.content = encryptField(input.content);
   if (input.tags !== undefined) doc.tags = input.tags;
   await doc.save();
   return toView(doc);
