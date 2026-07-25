@@ -202,6 +202,81 @@ export async function awardXp(
   };
 }
 
+export type PenaltyInput = {
+  xp?: number;
+  coins?: number;
+  disciplineDelta?: number;
+  source: string;
+  note?: string;
+};
+
+export type PenaltyResult = {
+  xpLost: number;
+  coinsLost: number;
+  totalXp: number;
+  level: number;
+  leveledDown: boolean;
+  disciplineScore: number;
+};
+
+function clampScore(n: number): number {
+  return Math.max(0, Math.min(100, n));
+}
+
+/**
+ * Applies a penalty: subtracts XP/coins (floored at 0), recomputes level (which
+ * can drop — a real consequence), and adjusts the discipline score. Penalties
+ * are recorded as negative ledger entries but do NOT emit xp.awarded events (so
+ * quests that count earned XP aren't affected).
+ */
+export async function applyPenalty(
+  userId: string,
+  input: PenaltyInput,
+): Promise<PenaltyResult> {
+  const profile = await getOrCreateProfile(userId);
+  const fromLevel = profile.level;
+  const xp = Math.max(0, input.xp ?? 0);
+  const coins = Math.max(0, input.coins ?? 0);
+
+  profile.totalXp = Math.max(0, profile.totalXp - xp);
+  profile.coins = Math.max(0, profile.coins - coins);
+  profile.level = levelFromXp(profile.totalXp);
+  profile.disciplineScore = clampScore(
+    profile.disciplineScore + (input.disciplineDelta ?? 0),
+  );
+  await profile.save();
+
+  if (xp > 0 || coins > 0) {
+    await XpEventModel.create({
+      userId,
+      amount: -xp,
+      source: input.source,
+      skillId: null,
+      note: input.note ?? null,
+    });
+  }
+
+  return {
+    xpLost: xp,
+    coinsLost: coins,
+    totalXp: profile.totalXp,
+    level: profile.level,
+    leveledDown: profile.level < fromLevel,
+    disciplineScore: profile.disciplineScore,
+  };
+}
+
+/** Adjusts the discipline score by a delta (clamped 0-100). Returns new value. */
+export async function adjustDiscipline(
+  userId: string,
+  delta: number,
+): Promise<number> {
+  const profile = await getOrCreateProfile(userId);
+  profile.disciplineScore = clampScore(profile.disciplineScore + delta);
+  await profile.save();
+  return profile.disciplineScore;
+}
+
 /**
  * Records a daily check-in: advances or resets the streak and grants XP with a
  * streak bonus. Idempotent per day.
@@ -308,6 +383,7 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
     coins: profile.coins,
     currentStreak: profile.currentStreak,
     longestStreak: profile.longestStreak,
+    disciplineScore: profile.disciplineScore,
     lastCheckIn: profile.lastCheckIn ?? null,
     checkedInToday: profile.lastCheckIn === dateKey(),
     checkInCount: profile.checkInCount,
