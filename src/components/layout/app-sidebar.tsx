@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { navigation, bottomNav } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
 function NavLink({
@@ -44,7 +43,7 @@ export function AppSidebar() {
         <span className="font-semibold tracking-tight">Life OS</span>
       </div>
 
-      <ScrollArea className="flex-1 px-2 py-3">
+      <div className="scrollbar-themed min-h-0 flex-1 overflow-y-auto px-2 py-3">
         <nav className="flex flex-col gap-4">
           {navigation.map((group) => (
             <div key={group.label} className="flex flex-col gap-1">
@@ -78,7 +77,7 @@ export function AppSidebar() {
             </div>
           ))}
         </nav>
-      </ScrollArea>
+      </div>
 
       <div className="border-t px-2 py-2">
         {bottomNav.map((navItem) => {
