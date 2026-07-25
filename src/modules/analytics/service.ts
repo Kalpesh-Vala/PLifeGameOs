@@ -5,7 +5,7 @@ import { dateKey } from "@/lib/date";
 import { getProfileView } from "@/modules/gamification/service";
 import { XpEventModel } from "@/modules/gamification/models";
 import { SKILLS } from "@/modules/gamification/lib/skills";
-import { HabitModel } from "@/modules/habits/models";
+import { HabitModel, HabitLogModel } from "@/modules/habits/models";
 import { MoodEntryModel } from "@/modules/mood/models";
 import { JournalEntryModel } from "@/modules/journal/models";
 import type {
@@ -14,6 +14,7 @@ import type {
 } from "@/modules/analytics/types";
 
 const HEATMAP_DAYS = 182;
+const DOW_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const SOURCE_LABELS: Record<string, string> = {
   task: "Tasks",
@@ -48,18 +49,21 @@ async function computeAnalyticsOverview(
 
   const start180 = subDays(new Date(), HEATMAP_DAYS - 1);
   const start30Key = dateKey(subDays(new Date(), 29));
+  const start14Key = dateKey(subDays(new Date(), 13));
   const start7 = subDays(new Date(), 6);
 
-  const [profile, events, habits, moods, journalCount] = await Promise.all([
-    getProfileView(userId),
-    XpEventModel.find({ userId, createdAt: { $gte: start180 } }).lean(),
-    HabitModel.find({ userId }).lean(),
-    MoodEntryModel.find({ userId, date: { $gte: start30Key } }).lean(),
-    JournalEntryModel.countDocuments({
-      userId,
-      createdAt: { $gte: subDays(new Date(), 30) },
-    }),
-  ]);
+  const [profile, events, habits, moods, journalCount, habitLogs] =
+    await Promise.all([
+      getProfileView(userId),
+      XpEventModel.find({ userId, createdAt: { $gte: start180 } }).lean(),
+      HabitModel.find({ userId }).lean(),
+      MoodEntryModel.find({ userId, date: { $gte: start30Key } }).lean(),
+      JournalEntryModel.countDocuments({
+        userId,
+        createdAt: { $gte: subDays(new Date(), 30) },
+      }),
+      HabitLogModel.find({ userId, date: { $gte: start14Key } }).lean(),
+    ]);
 
   // XP heatmap (per-day totals) + active days.
   const xpHeatmap: Record<string, number> = {};
@@ -69,6 +73,7 @@ async function computeAnalyticsOverview(
 
   const src30 = new Map<string, { xp: number; count: number }>();
   const activeDaySet = new Set<string>();
+  const dowXp = [0, 0, 0, 0, 0, 0, 0];
   let xp30 = 0;
   const count7: Record<string, number> = {};
 
@@ -81,6 +86,7 @@ async function computeAnalyticsOverview(
     if (t >= start30ms) {
       xp30 += e.amount;
       activeDaySet.add(key);
+      if (e.amount > 0) dowXp[created.getDay()] += e.amount;
       const cur = src30.get(e.source) ?? { xp: 0, count: 0 };
       cur.xp += e.amount;
       cur.count += 1;
@@ -147,16 +153,68 @@ async function computeAnalyticsOverview(
   ].filter((b) => b.xp > 0);
 
   // Mood trend (last 30 days).
-  const moodByDate = new Map(moods.map((m) => [m.date, m.mood]));
+  const moodByDate = new Map(moods.map((m) => [m.date, m]));
   const moodTrend = Array.from({ length: 30 }, (_, i) => {
     const d = dateKey(subDays(new Date(), 29 - i));
-    return { date: d, mood: moodByDate.get(d) ?? null };
+    const entry = moodByDate.get(d);
+    return {
+      date: d,
+      mood: entry?.mood ?? null,
+      energy: entry?.energy ?? null,
+    };
   });
+
+  // XP trend (last 30 days, derived from heatmap).
+  const xpTrend = Array.from({ length: 30 }, (_, i) => {
+    const d = dateKey(subDays(new Date(), 29 - i));
+    return { date: d, xp: xpHeatmap[d] ?? 0 };
+  });
+
+  // Day-of-week activity (last 30 days).
+  const dowActivity = DOW_LABELS.map((day, i) => ({ day, xp: dowXp[i] }));
+
+  // Habit outcomes (last 14 days, stacked on-time/late/missed).
+  const outcomeByDate = new Map<
+    string,
+    { onTime: number; late: number; missed: number }
+  >();
+  for (const log of habitLogs) {
+    const o = outcomeByDate.get(log.date) ?? {
+      onTime: 0,
+      late: 0,
+      missed: 0,
+    };
+    if (log.status === "on-time") o.onTime += 1;
+    else if (log.status === "late") o.late += 1;
+    else if (log.status === "missed") o.missed += 1;
+    outcomeByDate.set(log.date, o);
+  }
+  const habitOutcomes = Array.from({ length: 14 }, (_, i) => {
+    const d = dateKey(subDays(new Date(), 13 - i));
+    const o = outcomeByDate.get(d) ?? { onTime: 0, late: 0, missed: 0 };
+    return { date: d, ...o };
+  });
+
+  // Completion mix (last 30 days, by activity type).
+  const completionMix = [
+    { type: "Tasks", count: src30.get("task")?.count ?? 0 },
+    { type: "Habits", count: src30.get("habit")?.count ?? 0 },
+    {
+      type: "Quests",
+      count:
+        (src30.get("quest")?.count ?? 0) + (src30.get("mission")?.count ?? 0),
+    },
+    { type: "Check-ins", count: src30.get("check-in")?.count ?? 0 },
+    { type: "Journal", count: src30.get("journal")?.count ?? 0 },
+    { type: "Workouts", count: src30.get("fitness")?.count ?? 0 },
+    { type: "Coding", count: src30.get("coding")?.count ?? 0 },
+  ].filter((c) => c.count > 0);
 
   return {
     level: profile.level,
     title: profile.title,
     totalXp: profile.totalXp,
+    disciplineScore: profile.disciplineScore,
     currentStreak: profile.currentStreak,
     longestStreak: profile.longestStreak,
     productivityScore,
@@ -184,5 +242,9 @@ async function computeAnalyticsOverview(
       })),
     xpHeatmap,
     moodTrend,
+    xpTrend,
+    dowActivity,
+    habitOutcomes,
+    completionMix,
   };
 }

@@ -28,10 +28,21 @@ export type SkillBar = {
   progressPct: number;
 };
 
+export type TrendPoint = { date: string; xp: number };
+export type DowPoint = { day: string; xp: number };
+export type HabitOutcomePoint = {
+  date: string;
+  onTime: number;
+  late: number;
+  missed: number;
+};
+export type CompletionMix = { type: string; count: number };
+
 export type AnalyticsOverview = {
   level: number;
   title: string;
   totalXp: number;
+  disciplineScore: number;
   currentStreak: number;
   longestStreak: number;
   productivityScore: number;
@@ -41,5 +52,9 @@ export type AnalyticsOverview = {
   lifeBalance: BalanceSlice[];
   skills: SkillBar[];
   xpHeatmap: Record<string, number>;
-  moodTrend: { date: string; mood: number | null }[];
+  moodTrend: { date: string; mood: number | null; energy: number | null }[];
+  xpTrend: TrendPoint[];
+  dowActivity: DowPoint[];
+  habitOutcomes: HabitOutcomePoint[];
+  completionMix: CompletionMix[];
 };
