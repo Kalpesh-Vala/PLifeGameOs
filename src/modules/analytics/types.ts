@@ -43,6 +43,7 @@ export type AnalyticsOverview = {
   title: string;
   totalXp: number;
   disciplineScore: number;
+  disciplineTracked: boolean;
   currentStreak: number;
   longestStreak: number;
   productivityScore: number;

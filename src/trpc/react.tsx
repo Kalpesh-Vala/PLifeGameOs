@@ -74,7 +74,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           persistOptions={{
             persister,
             maxAge: 24 * 60 * 60 * 1000,
-            buster: "v1",
+            buster: "v2",
           }}
         >
           {props.children}

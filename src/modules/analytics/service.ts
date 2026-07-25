@@ -215,6 +215,7 @@ async function computeAnalyticsOverview(
     title: profile.title,
     totalXp: profile.totalXp,
     disciplineScore: profile.disciplineScore,
+    disciplineTracked: habitLogs.length > 0,
     currentStreak: profile.currentStreak,
     longestStreak: profile.longestStreak,
     productivityScore,

@@ -36,7 +36,7 @@ import {
 export function AnalyticsView() {
   const overview = trpc.analytics.overview.useQuery();
 
-  if (overview.isLoading || !overview.data) {
+  if (overview.isLoading || !overview.data || !overview.data.xpTrend) {
     return (
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -170,15 +170,16 @@ function KpiRow({ data }: { data: AnalyticsOverview }) {
     },
     {
       label: "Discipline",
-      value: data.disciplineScore,
+      value: data.disciplineTracked ? data.disciplineScore : "—",
       icon: Shield,
-      tone:
-        data.disciplineScore >= 70
+      tone: !data.disciplineTracked
+        ? "muted-foreground"
+        : data.disciplineScore >= 70
           ? "success"
           : data.disciplineScore >= 40
             ? "warning"
             : "destructive",
-      progress: data.disciplineScore,
+      progress: data.disciplineTracked ? data.disciplineScore : undefined,
     },
     {
       label: "Streak",
