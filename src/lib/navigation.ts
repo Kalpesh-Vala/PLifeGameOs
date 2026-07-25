@@ -91,7 +91,7 @@ export const navigation: NavGroup[] = [
   {
     label: "Wellbeing",
     items: [
-      item("Fitness", "fitness", Dumbbell),
+      item("Fitness", "fitness", Dumbbell, false),
       item("Journal", "journal", NotebookPen, false),
       item("Mood", "mood", Smile, false),
       item("Timeline", "timeline", Clock, false),
@@ -108,7 +108,7 @@ export const navigation: NavGroup[] = [
   },
   {
     label: "Money",
-    items: [item("Finance", "finance", Wallet)],
+    items: [item("Finance", "finance", Wallet, false)],
   },
   {
     label: "AI",
